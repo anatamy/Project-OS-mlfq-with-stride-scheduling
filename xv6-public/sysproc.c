@@ -95,8 +95,21 @@ sys_uptime(void)
   return xticks;
 }
 int
-sys_yield()
+sys_yield(void)
 {
     yield();
     return 0;
 }
+int
+sys_getlev(void)
+{
+    return getlev();
+}
+int
+sys_set_cpu_share()
+{
+  int percent;
+  argint(0,&percent);
+  return set_cpu_share(percent);
+}
+

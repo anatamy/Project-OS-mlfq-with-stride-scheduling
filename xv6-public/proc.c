@@ -429,7 +429,6 @@ scheduler (void)
 						if(high_queue[i]->state != RUNNABLE) // q0 => highest priority queue
 							  continue;
 					  p=high_queue[i]; // p= process in now
-					  proc = high_queue[i]; // proc = process in now
 						for(it=0;it<tickPerPri[0];it++){
 						  p->clicks++;  // 현재 실행중인 프로세스의 틱 증가
 							tick_count++;
