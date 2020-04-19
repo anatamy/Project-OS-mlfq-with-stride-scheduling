@@ -19,6 +19,22 @@ extern void forkret(void);
 extern void trapret(void);
 
 static void wakeup1(void *chan);
+struct proc* high_queue[NPROC];
+struct proc* middle_queue[NPROC];
+struct proc* low_queue[NPROC];
+struct proc* stride_queue[NPROC];
+int high_count =-1;
+int middle_count =-1;
+int low_count =-1;
+int tick_count=0;
+int stride_count=-1;
+int tickPerpri[3] = {1,2,4};
+int tickchangePri[2] = {5,10};
+int max_tickets =1000;
+int mlfq_ticket =1000;
+int mlfq_stride =1;
+int mlfq_pass=0;
+int min_pass=0;
 
 void
 pinit(void)
@@ -81,14 +97,20 @@ allocproc(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-
+  p->priority=0;
+  p->clicks=0;
+  high_count++;
+  high_queue[high_count] = p;
   release(&ptable.lock);
   return 0;
 
 found:
   p->state = EMBRYO;
   p->pid = nextpid++;
-
+  p->priority++;
+  p->clicks =0;
+  high_count++;
+  high_queue[high_count] =p; 
   release(&ptable.lock);
 
   // Allocate kernel stack.
@@ -390,7 +412,11 @@ yield(void)
   sched();
   release(&ptable.lock);
 }
-
+int
+getlev(void)
+{
+    return myproc() -> priority;
+}
 // A fork child's very first scheduling by scheduler()
 // will swtch here.  "Return" to user space.
 void
@@ -531,4 +557,9 @@ procdump(void)
     }
     cprintf("\n");
   }
+}
+int getppid(void)
+{
+    return myproc() -> parent -> pid;
+
 }
