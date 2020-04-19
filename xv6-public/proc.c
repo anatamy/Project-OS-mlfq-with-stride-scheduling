@@ -378,7 +378,7 @@ scheduler (void)
 				min_pass=min_pass+p->stride;
 				switchuvm(p);
 				p->state = RUNNING; // change process statement => RUNNING
-				swtch(&cpu->scheduler, p->context); // change context
+				swtch(mycpu()->scheduler, p->context); // change context
 				switchkvm();
 			}
 			// do mlfq queue
@@ -438,7 +438,7 @@ scheduler (void)
 							// 실행파트
 						  switchuvm(p);
 						  p->state = RUNNING; // change process statement => RUNNING
-						  swtch(&cpu->scheduler, p->context); // change context
+						  swtch(mycpu()->scheduler, p->context); // change context
 						  switchkvm();
 						}
 						// 현재 프로세스의 틱이 큐를 바꾸는 상황인지 체크
@@ -475,7 +475,7 @@ scheduler (void)
 							mlfq_pass=mlfq_pass+mlfq_stride;
 						  switchuvm(p);
 						  p->state = RUNNING;
-						  swtch(&cpu->scheduler, p->context);
+						  swtch(mycpu()->scheduler, p->context);
 						  switchkvm();
 						}
 						//로우큐로 가는 파트
@@ -509,7 +509,7 @@ scheduler (void)
 							mlfq_pass=mlfq_pass+mlfq_stride;
 						  switchuvm(p);
 						  p->state = RUNNING;
-						  swtch(&cpu->scheduler, p->context);
+						  swtch(mycpu()->scheduler, p->context);
 						  switchkvm();
 						}
 					  p = 0;
