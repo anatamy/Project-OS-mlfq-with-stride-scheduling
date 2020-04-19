@@ -698,13 +698,11 @@ procdump(void)
     cprintf("\n");
   }
 }
-int
-getlev(void)
+int getlev(void)
 {
     return myproc() -> priority;
 }
-int
-set_cpu_share(int percent){
+int set_cpu_share(int percent){
 	// MLFQ must occupy at least 20%
 	struct  proc *p;
 	int i;

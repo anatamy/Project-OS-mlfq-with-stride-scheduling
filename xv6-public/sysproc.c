@@ -106,7 +106,7 @@ sys_getlev(void)
     return getlev();
 }
 int
-sys_set_cpu_share()
+sys_set_cpu_share(void)
 {
   int percent;
   argint(0,&percent);
