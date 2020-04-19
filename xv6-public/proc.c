@@ -73,7 +73,6 @@ allocproc(void)
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     if(p->state == UNUSED)
       goto found;
-  p->priority=0;
   release(&ptable.lock);
   return 0;
 found:
@@ -280,27 +279,29 @@ scheduler(void)
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
-  int i;
-  int j;
-  int check;
+  int i=0;
+  int j=0;
+  int check=0;
   for(;;){
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    check=0;
     for(i=0;i<=2;i++){
       if(check==1)
-      break;
+        break;
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-        if(p->state != RUNNABLE && p->priority != i)
+        if(p->state != RUNNABLE)
+          continue;
+        if(p->priority!=i)
           continue;
         c->proc = p;
         switchuvm(p);
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
-        check=1;
+        cprintf(" %d  one cycle\n",p->priority);
+        j++;
         c->proc = 0;
       }
     }
@@ -466,3 +467,16 @@ procdump(void)
     cprintf("\n");
   }
 }
+int getlev(void)
+{
+    return 0;
+}
+int set_cpu_share(int percent)
+{
+    return 0;
+}
+int getppid(void)
+{
+    return 0;
+}
+
