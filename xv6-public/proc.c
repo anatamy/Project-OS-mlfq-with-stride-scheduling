@@ -28,7 +28,7 @@ int middle_count =-1;
 int low_count =-1;
 int tick_count=0;
 int stride_count=-1;
-int tickPerpri[3] = {1,2,4};
+int tickPerPri[3] = {1,2,4};
 int tickchangePri[2] = {5,10};
 int max_tickets =1000;
 int mlfq_ticket =1000;
@@ -365,7 +365,7 @@ scheduler (void)
 					continue;
 				// find min_pass stirde process
 				if(min_pass>stride_queue[i]->pass)
-					min_pass=stride_queue->pass;
+					min_pass=stride_queue[i]->pass;
 			}
 			// do stride queue
 			if(min_pass< mlfq_pass)
@@ -467,7 +467,7 @@ scheduler (void)
 							continue;
 					  p=middle_queue[i];
 						//실행파트
-						for(it=0,tickPerPri[1],it++){
+						for(it=0;tickPerPri[1];it++){
 							p->clicks++;
 							tick_count++;
 							p->last_used=tick_count;
@@ -501,7 +501,7 @@ scheduler (void)
 							continue;
 						p=low_queue[i];
 						//실행파트
-						for(it=0,tickPerPri[2],it++){
+						for(it=0;tickPerPri[2];it++){
 							p->clicks++;
 							tick_count++;
 							p->last_used=tick_count;
@@ -517,6 +517,7 @@ scheduler (void)
 			}
 			//release lock
 			release(&ptable.lock);
+    }
 }
 
 // Enter scheduler.  Must hold only ptable.lock
@@ -707,7 +708,7 @@ set_cpu_share(int percent){
 	struct  proc *p;
 	int i;
 	int j;
-	if(mlfq_ticket-int(max_tickets*percent/100)<=200)
+	if(mlfq_ticket - int(max_tickets*percent/100)<=200)
 		return -1;
 	// take tickets
 	else{
@@ -719,12 +720,12 @@ set_cpu_share(int percent){
 		stride_count++;
 		stride_queue[stride_count]=p;
 		// mlfq의 티켓 변동사항 반영
-		mlfq_ticket=mlfq_ticket-int(max_tickets*percent/100);
+		mlfq_ticket=mlfq_ticket - int(max_tickets*percent/100);
 		mlfq_stride=int(max_tickets/mlfq_ticket);
 		// mlfq에서 프로세스 제거
-		for(i=0;i<=high_count,i++)
+		for(i=0;i<=high_count;i++)
 		{
-			if(high_queue[i].pid==p.pid){
+			if(high_queue[i]->pid==p->pid){
 				high_queue[i]=NULL;
 				for(j=i;j<=high_count-1;j++){
 					high_queue[j] = high_queue[j+1];
