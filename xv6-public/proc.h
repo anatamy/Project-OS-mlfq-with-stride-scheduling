@@ -9,10 +9,8 @@ struct cpu {
   int intena;                  // Were interrupts enabled before pushcli?
   struct proc *proc;           // The process running on this cpu or null
 };
-
 extern struct cpu cpus[NCPU];
 extern int ncpu;
-
 //PAGEBREAK: 17
 // Saved registers for kernel context switches.
 // Don't need to save all the segment registers (%cs, etc),
@@ -31,9 +29,7 @@ struct context {
   uint ebp;
   uint eip;
 };
-
 enum procstate { UNUSED, EMBRYO, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
-
 // Per-process state
 struct proc {
   uint sz;                     // Size of process memory (bytes)
@@ -49,14 +45,12 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];
-  int clicks;
   int priority;
-  int last_used;
-  int tickets;
+  int pass;
   int stride;
-  int pass;               // Process name (debugging)
+  int tickets;
+  int lastschedule;               // Process name (debugging)
 };
-
 // Process memory is laid out contiguously, low addresses first:
 //   text
 //   original data and bss
