@@ -716,7 +716,7 @@ set_cpu_share(int percent){
 		//stide queue에 프로세스를 할당
 		p=myproc();
 		p->tickets=(max_tickets*percent/100);
-		p->stide=max_tickets/p->tickets;
+		p->stride=max_tickets/p->tickets;
 		p->pass=min_pass;
 		stride_count++;
 		stride_queue[stride_count]=p;
