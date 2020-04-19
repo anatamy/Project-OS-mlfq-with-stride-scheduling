@@ -342,39 +342,182 @@ wait(void)
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
 void
-scheduler(void)
+scheduler (void)
 {
-  struct proc *p;
-  struct cpu *c = mycpu();
-  c->proc = 0;
-  
-  for(;;){
-    // Enable interrupts on this processor.
-    sti();
+		// 다음에 실행될 프로세스
+	  struct proc *p;
+		//iterators
+	  int i;
+	  int j;
+		int it;
+		//loop for MLFQ
+	  for(;;){
+		// Enable interrupts on this processor.
+			sti();
+			// Loop over process table looking for process to run.
+			acquire(&ptable.lock);
 
-    // Loop over process table looking for process to run.
-    acquire(&ptable.lock);
-    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-      if(p->state != RUNNABLE)
-        continue;
-
-      // Switch to chosen process.  It is the process's job
-      // to release ptable.lock and then reacquire it
-      // before jumping back to us.
-      c->proc = p;
-      switchuvm(p);
-      p->state = RUNNING;
-
-      swtch(&(c->scheduler), p->context);
-      switchkvm();
-
-      // Process is done running for now.
-      // It should have changed its p->state before coming back.
-      c->proc = 0;
-    }
-    release(&ptable.lock);
-
-  }
+			// check we do mlfq or stride
+			for(i=0;i<=stride_count;i++)
+			{
+				// check stride_queue[i] is runnable
+				if(stride_queue[i]->state != RUNNABLE)
+					continue;
+				// find min_pass stirde process
+				if(min_pass>stride_queue[i]->pass)
+					min_pass=stride_queue->pass;
+			}
+			// do stride queue
+			if(min_pass< mlfq_pass)
+			{
+				p=stride_queue[i];
+				if(p->state != RUNNABLE)
+					continue;
+				p->pass=p->pass+p->stride;
+				min_pass=min_pass+p->stride;
+				switchuvm(p);
+				p->state = RUNNING; // change process statement => RUNNING
+				swtch(&cpu->scheduler, p->context); // change context
+				switchkvm();
+			}
+			// do mlfq queue
+			else{
+				// priority boost every 100 ticks
+				if(tick_count%100==0){
+					//priority boost middle_queue
+					for(i=0;i<middle_count;i++)
+					{
+						if(tick_count-middle_queue[i]->last_used>=100){
+							p=middle_queue[i];
+							high_count++;
+							p->priority=0;
+							high_queue[high_count] = p;
+							/*delete proc from middle_queue*/
+							middle_queue[i]=NULL;
+							for(j=i;j<=middle_count-1;j++)
+								middle_queue[j] = middle_queue[j+1];
+							middle_queue[middle_count] = NULL;
+							p->clicks = 0;
+							middle_count--;
+							i--;
+							p=0;
+						}
+					}
+					//priority boost low_queue
+					for(i=0;i<low_count;i++)
+					{
+						if(tick_count-low_queue[i]->last_used>=100){
+							p=low_queue[i];
+							high_count++;
+							p->priority=0;
+							high_queue[high_count] = p;
+							/*delete proc from low_queue*/
+							low_queue[i]=NULL;
+							for(j=i;j<=low_count-1;j++)
+								low_queue[j] = low_queue[j+1];
+							low_queue[low_count] = NULL;
+							p->clicks = 0;
+							low_count--;
+							i--;
+							p=0;
+						}
+					}
+				}
+				// schedule high_queue
+				if(high_count!=-1){
+					for(i=0;i<=high_count;i++){
+						if(high_queue[i]->state != RUNNABLE) // q0 => highest priority queue
+							  continue;
+					  p=high_queue[i]; // p= process in now
+					  proc = high_queue[i]; // proc = process in now
+						for(it=0;it<tickPerPri[0];it++){
+						  p->clicks++;  // 현재 실행중인 프로세스의 틱 증가
+							tick_count++;
+							p->last_used=tick_count;
+							mlfq_pass=mlfq_pass+mlfq_stride;
+							// 실행파트
+						  switchuvm(p);
+						  p->state = RUNNING; // change process statement => RUNNING
+						  swtch(&cpu->scheduler, p->context); // change context
+						  switchkvm();
+						}
+						// 현재 프로세스의 틱이 큐를 바꾸는 상황인지 체크
+					  if(p->clicks ==tickchangePri[0]){
+						  /*copy proc to lower priority queue*/
+							//high_queue -> middle_queue
+						  middle_count++; //
+							//현재 프로세스의 우선순위 증가
+						  p->priority=p->priority+1;
+							// 증가된 프로세스를 다음 큐로 복사
+						  middle_queue[middle_count] = p;
+						  /*delete proc from q0*/
+						  high_queue[i]=NULL;
+						  for(j=i;j<=high_count-1;j++)
+							  high_queue[j] = high_queue[j+1];
+						  high_queue[high_count] = NULL;
+							p->clicks = 0;
+						  high_count--;
+					  }
+					  p = 0;
+					}
+				}
+				//schedule middle_queue
+				if(middle_count!=-1){
+					for(i=0;i<=middle_count;i++){
+						if(middle_queue[middle_count]->state != RUNNABLE)
+							continue;
+					  p=middle_queue[i];
+						//실행파트
+						for(it=0,tickPerPri[1],it++){
+							p->clicks++;
+							tick_count++;
+							p->last_used=tick_count;
+							mlfq_pass=mlfq_pass+mlfq_stride;
+						  switchuvm(p);
+						  p->state = RUNNING;
+						  swtch(&cpu->scheduler, p->context);
+						  switchkvm();
+						}
+						//로우큐로 가는 파트
+					  if(p->clicks ==tickchangePri[1]){
+						  /*copy proc to low_queue*/
+						  low_count++;
+						  p->priority=p->priority+1;
+						  low_queue[low_count] = p;
+						  /*delete proc from middle_queue*/
+						  middle_queue[i]=NULL;
+						  for(j=i;j<=middle_count-1;j++)
+							  middle_queue[j] = middle_queue[j+1];
+						  middle_queue[middle_count] = NULL;
+						  p->clicks = 0;
+						  middle_count--;
+					  }
+					  p = 0;
+					}
+				}
+				// schedule low_queue
+				if(low_count!=-1){
+					for(i=0;i<=low_count;i++){
+						if(low_queue[i]->state != RUNNABLE)
+							continue;
+						p=low_queue[i];
+						//실행파트
+						for(it=0,tickPerPri[2],it++){
+							p->clicks++;
+							tick_count++;
+							p->last_used=tick_count;
+							mlfq_pass=mlfq_pass+mlfq_stride;
+						  switchuvm(p);
+						  p->state = RUNNING;
+						  swtch(&cpu->scheduler, p->context);
+						  switchkvm();
+						}
+					  p = 0;
+					}
+				}
+			}
+			//release lock
+			release(&ptable.lock);
 }
 
 // Enter scheduler.  Must hold only ptable.lock
