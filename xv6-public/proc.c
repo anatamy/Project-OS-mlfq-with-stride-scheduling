@@ -15,8 +15,8 @@ struct {
 static struct proc *initproc;
 int nextpid = 1;
 int total_tick=0;
-int stride_cpu=0;
-int mlfq_cpu=100;
+int stride_ticket=0;
+int mlfq_ticket=100;
 int max_tickets=100;
 int mlfq_pass=0;
 int mlfq_stride=0;
@@ -300,7 +300,8 @@ scheduler(void)
   int check_priority=0;
   int i=0;
   int min_pass=1000000000;
-  mlfq_stride=max_tickets/mlfq_cpu;
+  int min_pid=0;
+  mlfq_stride=max_tickets/mlfq_ticket;
   for(;;)
   {
     // Enable interrupts on this processor.
@@ -312,9 +313,12 @@ scheduler(void)
     {
       if(p->state != RUNNABLE) continue; // check p's state
       if(p->isstride != 1) continue;
-      if(min_pass > p->pass) min_pass=p->pass; // find q to schedule
+      if(min_pass > p->pass)
+        { 
+          min_pass=p->pass;
+          min_pid=p->pid;
+        } // find q to schedule
     }
-    if(min_pass==mlfq_pass) mlfq_pass=0;
     if(min_pass >= mlfq_pass) // do mlfq schedule
     {
     //priority_boost;
@@ -342,7 +346,7 @@ scheduler(void)
           p->state = RUNNING;
           swtch(&(c->scheduler), p->context);
           switchkvm();
-      //    cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
+          cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
        }
         if(p->priority <2)
         {
@@ -356,6 +360,10 @@ scheduler(void)
     }
     else // do stride schedule
     {
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      {
+        if(p->pid==min_pid) break;
+      }
         c->proc =p;
         if(p->state != RUNNABLE) continue;
         p->pass +=p->stride;
@@ -363,7 +371,7 @@ scheduler(void)
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
-     //   cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
+        cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
     //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
@@ -532,7 +540,7 @@ int getlev(void)
 {
     return myproc()->priority;
 }
-int set_cpu_share(int cpu)
+int set_cpu_share(int ticket)
 {
     struct proc *p;
     int min_pass=mlfq_pass;
@@ -546,7 +554,7 @@ int set_cpu_share(int cpu)
           if(min_pass>p->pass) min_pass=p->pass;
       }
     }
-    if(stride_cpu+cpu>80)
+    if(stride_ticket+ticket>80)
     {
       release(&ptable.lock);
       return -1;
