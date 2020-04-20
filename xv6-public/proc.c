@@ -18,7 +18,8 @@ int total_tick=0;
 int stride_cpu=0;
 int mlfq_cpu=100;
 int max_tickets=100;
-int mlfq_stride=;
+int mlfq_pas=0;
+int mlfq_stride=max_tickets/mlfq_cpu;
 extern void forkret(void);
 extern void trapret(void);
 static void wakeup1(void *chan);
@@ -297,7 +298,6 @@ scheduler(void)
   int repaet_array[3]={1,2,4};
   int check_priority=0;
   int i=0;
-  int mlfq_pass=0;
   int min_pass=100000;
   for(;;){
     // Enable interrupts on this processor.
@@ -308,9 +308,9 @@ scheduler(void)
     {
       if(p->state != RUNNABLE) continue; // check p's state
       if(p->isstride != 1) continue;
-      if(min_pass > p->pass) min_pass=pass; // find q to schedule
+      if(min_pass > p->pass) min_pass=p->pass; // find q to schedule
     }
-    if(min_pass >= mlfa_pass) // do mlfq schedule
+    if(min_pass >= mlfq_pass) // do mlfq schedule
     {
     //priority_boost;
       if(total_tick>=100)
@@ -532,7 +532,7 @@ int set_cpu_share(int cpu)
     int min_pass=mlfq_pass;
     p=myproc();
     if(cpu==0) return -1;
-    acquire(&ptable.lock)
+    acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
       if(p->isstride==1)
