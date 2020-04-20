@@ -375,6 +375,7 @@ scheduler(void)
         swtch(&(c->scheduler), p->context);
         switchkvm();
         stride=0;
+        c->proc=0;
         //cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
     //cprintf("release in mlfq shceduler\n");
@@ -569,6 +570,7 @@ int set_cpu_share(int ticket)
     mlfq_ticket=mlfq_ticket-ticket;
     mlfq_stride=max_tickets/mlfq_ticket;
     p->isstride=1;
+    cprintf("my pass : %d, my tickets : %d, my stride : %d\n",p->pass,p->tickets,p->stride);
     release(&ptable.lock);
     return 0;
 }
