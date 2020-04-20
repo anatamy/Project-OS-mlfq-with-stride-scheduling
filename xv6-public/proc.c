@@ -15,6 +15,10 @@ struct {
 static struct proc *initproc;
 int nextpid = 1;
 int total_tick=0;
+int stride_cpu=0;
+int mlfq_cpu=100;
+int max_tickets=100;
+int mlfq_stride=;
 extern void forkret(void);
 extern void trapret(void);
 static void wakeup1(void *chan);
@@ -293,46 +297,69 @@ scheduler(void)
   int repaet_array[3]={1,2,4};
   int check_priority=0;
   int i=0;
+  int mlfq_pass=0;
+  int min_pass=100000;
   for(;;){
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    //priority_boost;
-    if(total_tick>=100)
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-      priority_boost();
+      if(p->state != RUNNABLE) continue; // check p's state
+      if(p->isstride != 1) continue;
+      if(min_pass > p->pass) min_pass=pass; // find q to schedule
     }
-    for(check_priority=0;check_priority<=2;check_priority++)
+    if(min_pass >= mlfa_pass) // do mlfq schedule
     {
-      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    //priority_boost;
+      if(total_tick>=100)
       {
-        if(p->state != RUNNABLE) continue; // check p's state
-        if(p->priority==check_priority) break; // find q to schedule
+        priority_boost();
       }
-      if(p->priority==check_priority) break; // find q to schedule
-     }
-     c->proc = p;
-     for(i=0;i<repaet_array[p->priority];i++)
-     {
-        if(p->state != RUNNABLE) break;  
-        total_tick++;
-        p->tick++;
+      for(check_priority=0;check_priority<=2;check_priority++)
+      {
+        for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+        {
+          if(p->state != RUNNABLE) continue; // check p's state
+          if(p->priority==check_priority) break; // find q to schedule
+        }
+        if(p->priority==check_priority) break; // find q to schedule
+       }
+       c->proc = p;
+       mlfq_pass+=mlfq_stride;
+       for(i=0;i<repaet_array[p->priority];i++)
+       {
+          if(p->state != RUNNABLE) break;
+          total_tick++;
+          p->tick++;
+          switchuvm(p);
+          p->state = RUNNING;
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+          cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
+       }
+        if(p->priority <2)
+        {
+          if(p->tick % 5 ==0)
+          {
+            p->tick=0;
+            p->priority++;
+          }
+        }
+        c->proc=0;
+      }
+      else // do stride schedule
+      {
+        c->proc =p;
+        if(p->state != RUNNABLE) continue;
+        p->pass +=p->stride;
         switchuvm(p);
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
-        cprintf(" total tick : %d check_priority: %d I : %d \n",total_tick,check_priority, i);
-     }
-      if(p->priority <2)
-      {
-        if(p->tick % 5 ==0)
-        {
-          p->tick=0;
-          p->priority++;
-        }
+        cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
       }
-      c->proc=0;
       release(&ptable.lock);
     }
 }
@@ -499,8 +526,32 @@ int getlev(void)
 {
     return myproc()->priority;
 }
-int set_cpu_share(int percent)
+int set_cpu_share(int cpu)
 {
+    struct proc *p;
+    int min_pass=mlfq_pass;
+    p=myproc();
+    if(cpu==0) return -1;
+    acquire(&ptable.lock)
+    for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+    {
+      if(p->isstride==1)
+      {
+          if(min_pass>p->pass) min_pass=p->pass;
+      }
+    }
+    if(stride_cpu+cpu>80)
+    {
+      release(&ptable.lock);
+      return =-1
+    }
+    p->pass=min_pass;
+    p->tickets=cpu;
+    p->stride=max_tickets/p->tickets;
+    mlfq_cpu=mlfq_ticket-cpu;
+    mlfq_stride=max_tickets/mlfq_cpu;
+    p->isstride=1;
+    release(&ptable.lock);
     return 0;
 }
 int getppid(void)
