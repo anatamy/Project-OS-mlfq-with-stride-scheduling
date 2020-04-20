@@ -84,6 +84,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->priority=0;
+  p->istride=0;
   release(&ptable.lock);
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
@@ -300,7 +301,8 @@ scheduler(void)
   int i=0;
   int min_pass=100000;
   mlfq_stride=max_tickets/mlfq_cpu;
-  for(;;){
+  for(;;)
+  {
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
@@ -349,9 +351,9 @@ scheduler(void)
           }
         }
         c->proc=0;
-      }
-      else // do stride schedule
-      {
+    }
+    else // do stride schedule
+    {
         c->proc =p;
         if(p->state != RUNNABLE) continue;
         p->pass +=p->stride;
@@ -360,8 +362,8 @@ scheduler(void)
         swtch(&(c->scheduler), p->context);
         switchkvm();
         cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
-      }
-      release(&ptable.lock);
+    }
+    release(&ptable.lock);
     }
 }
 // Enter scheduler.  Must hold only ptable.lock
