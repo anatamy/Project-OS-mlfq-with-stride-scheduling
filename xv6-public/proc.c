@@ -215,9 +215,9 @@ exit(void)
   end_op();
   curproc->cwd = 0;
   acquire(&ptable.lock);
-  mlfq_ticket=curproc->ticket;
+  mlfq_ticket=curproc->tickets;
   mlfq_stride=max_tickets/mlfq_stride;
-  stride_ticket=stride_ticket-curproc->ticket
+  stride_ticket=stride_ticket-curproc->tickets;
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
   // Pass abandoned children to init.
