@@ -545,7 +545,7 @@ int set_cpu_share(int ticket)
     struct proc *p;
     int min_pass=mlfq_pass;
     p=myproc();
-    if(cpu==0) return -1;
+    if(ticket==0) return -1;
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
@@ -562,8 +562,8 @@ int set_cpu_share(int ticket)
     p->pass=min_pass;
     p->tickets=cpu;
     p->stride=max_tickets/p->tickets;
-    mlfq_cpu=mlfq_cpu-cpu;
-    mlfq_stride=max_tickets/mlfq_cpu;
+    mlfq_ticket=mlfq_ticket-ticket;
+    mlfq_stride=max_tickets/mlfq_ticket;
     p->isstride=1;
     release(&ptable.lock);
     return 0;
