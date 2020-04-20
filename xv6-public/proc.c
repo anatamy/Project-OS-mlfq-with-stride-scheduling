@@ -564,6 +564,7 @@ int set_cpu_share(int ticket)
       release(&ptable.lock);
       return -1;
     }
+    stride_ticket+=ticket;
     p->pass=min_pass;
     p->tickets=ticket;
     p->stride=max_tickets/p->tickets;
