@@ -376,7 +376,7 @@ scheduler(void)
         switchkvm();
         stride=0;
         c->proc=0;
-        //cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
+        cprintf(" my_pass : %d , my_stride : %d, my_ticket : \n", p->pass,p->stride,p->tickets);
     }
     //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
