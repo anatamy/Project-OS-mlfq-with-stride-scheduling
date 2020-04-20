@@ -294,6 +294,7 @@ void
 scheduler(void)
 {
   struct proc *p;
+  struct proc *stride;
   struct cpu *c = mycpu();
   c->proc = 0;
   int repaet_array[3]={1,2,4};
@@ -306,6 +307,8 @@ scheduler(void)
   {
     // Enable interrupts on this processor.
     sti();
+    min_pass=1000000000;
+    if(stride_ticket==0) mlfq_pass=0;
     // Loop over process table looking for process to run.
    // cprintf("acquire in mlfq shceduler\n");
     acquire(&ptable.lock);
@@ -314,9 +317,9 @@ scheduler(void)
       if(p->state != RUNNABLE) continue; // check p's state
       if(p->isstride != 1) continue;
       if(min_pass > p->pass)
-        { 
+        {
           min_pass=p->pass;
-          min_pid=p->pid;
+          stride=p;
         } // find q to schedule
     }
     if(min_pass >= mlfq_pass) // do mlfq schedule
@@ -346,7 +349,7 @@ scheduler(void)
           p->state = RUNNING;
           swtch(&(c->scheduler), p->context);
           switchkvm();
-          cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
+          //cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
        }
         if(p->priority <2)
         {
@@ -360,10 +363,7 @@ scheduler(void)
     }
     else // do stride schedule
     {
-      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
-      {
-        if(p->pid==min_pid) break;
-      }
+        p=stride;
         c->proc =p;
         if(p->state != RUNNABLE) continue;
         p->pass +=p->stride;
@@ -371,7 +371,7 @@ scheduler(void)
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
-        cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
+        //cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
     //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
@@ -545,7 +545,7 @@ int set_cpu_share(int ticket)
     struct proc *p;
     int min_pass=mlfq_pass;
     p=myproc();
-    if(ticket==0) return -1;
+    if(cpu==0) return -1;
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
@@ -562,8 +562,8 @@ int set_cpu_share(int ticket)
     p->pass=min_pass;
     p->tickets=cpu;
     p->stride=max_tickets/p->tickets;
-    mlfq_ticket=mlfq_ticket-ticket;
-    mlfq_stride=max_tickets/mlfq_ticket;
+    mlfq_cpu=mlfq_cpu-cpu;
+    mlfq_stride=max_tickets/mlfq_cpu;
     p->isstride=1;
     release(&ptable.lock);
     return 0;
