@@ -215,9 +215,9 @@ exit(void)
   end_op();
   curproc->cwd = 0;
   acquire(&ptable.lock);
-  mlfq_ticket=curproc->tickets;
+  mlfq_ticket=curproc->ticket;
   mlfq_stride=max_tickets/mlfq_stride;
-  stride_ticket=stride_ticket-curproc->tickets;
+  stride_ticket=stride_ticket-curproc->ticket
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
   // Pass abandoned children to init.
@@ -297,7 +297,7 @@ void
 scheduler(void)
 {
   struct proc *p;
-  struct proc *stride=0;
+  struct proc *stride;
   struct cpu *c = mycpu();
   c->proc = 0;
   int repaet_array[3]={1,2,4};
@@ -573,7 +573,8 @@ int set_cpu_share(int ticket)
     mlfq_ticket=mlfq_ticket-ticket;
     mlfq_stride=max_tickets/mlfq_ticket;
     p->isstride=1;
-    cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d\n",stride_ticket,p->pass,p->tickets,p->stride);
+    cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d my isstride : %d\n",stride_ticket,p->pass,p->tickets,p->stride,p->isstride);
+    cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d my isstride : %d\n",stride_ticket,myproc()->pass,myproc()->tickets,myproc()->stride,myproc()->isstride);
     release(&ptable.lock);
     return 0;
 }
