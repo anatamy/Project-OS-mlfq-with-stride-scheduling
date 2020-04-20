@@ -323,7 +323,7 @@ scheduler(void)
         {
           min_pass=p->pass;
           stride=p;
-        //  cprintf("i found min_pass %d\n",min_pass);
+          cprintf("i found min_pass %d mlfq pass : %d\n",min_pass,mlfq_pass);
         } // find q to schedule
     }
     if(min_pass >= mlfq_pass) // do mlfq schedule
@@ -368,6 +368,7 @@ scheduler(void)
     }
     else // do stride schedule
     {
+        cprintf("i' m stride\n");
         p=stride;
         c->proc =p;
         if(p->state != RUNNABLE) continue;
@@ -573,7 +574,7 @@ int set_cpu_share(int ticket)
     mlfq_ticket=mlfq_ticket-ticket;
     mlfq_stride=max_tickets/mlfq_ticket;
     myproc()->isstride=1;
-    cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d my isstride : %d\n",stride_ticket,p->pass,p->tickets,p->stride,p->isstride);
+    //cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d my isstride : %d\n",stride_ticket,p->pass,p->tickets,p->stride,p->isstride);
     cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d my isstride : %d\n",stride_ticket,myproc()->pass,myproc()->tickets,myproc()->stride,myproc()->isstride);
     release(&ptable.lock);
     return 0;
