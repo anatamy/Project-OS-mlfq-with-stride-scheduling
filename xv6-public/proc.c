@@ -368,7 +368,7 @@ scheduler(void)
     }
     else // do stride schedule
     {
-        cprintf("i' m stride\n");
+        //cprintf("i' m stride\n");
         p=stride;
         c->proc =p;
         if(p->state != RUNNABLE) continue;
