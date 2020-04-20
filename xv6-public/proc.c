@@ -314,6 +314,7 @@ scheduler(void)
       if(p->isstride != 1) continue;
       if(min_pass > p->pass) min_pass=p->pass; // find q to schedule
     }
+    if(min_pass==mlfq_pass) mlfq_pass=0;
     if(min_pass >= mlfq_pass) // do mlfq schedule
     {
     //priority_boost;
