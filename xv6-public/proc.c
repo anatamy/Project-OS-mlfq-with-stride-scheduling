@@ -84,7 +84,7 @@ found:
   p->state = EMBRYO;
   p->pid = nextpid++;
   p->priority=0;
-  p->istride=0;
+  p->isstride=0;
   release(&ptable.lock);
   // Allocate kernel stack.
   if((p->kstack = kalloc()) == 0){
@@ -306,6 +306,7 @@ scheduler(void)
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
+    cprintf("acquire in mlfq shceduler\n");
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
@@ -363,6 +364,7 @@ scheduler(void)
         switchkvm();
         cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
+    cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
     }
 }
