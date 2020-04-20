@@ -49,7 +49,8 @@ struct proc {
   int pass;
   int stride;
   int tickets;
-  int lastschedule;               // Process name (debugging)
+  int lastschedule;
+  int tick;              // Process name (debugging)
 };
 // Process memory is laid out contiguously, low addresses first:
 //   text

@@ -281,29 +281,58 @@ scheduler(void)
   c->proc = 0;
   int i=0;
   int j=0;
+  int r=0;
   int check=0;
   for(;;){
+    check=0;
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
     for(i=0;i<=2;i++){
-      if(check==1)
+      if(check==1){
+        check=0;
         break;
+      }
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
         if(p->state != RUNNABLE)
           continue;
         if(p->priority!=i)
           continue;
         c->proc = p;
-        switchuvm(p);
-        p->state = RUNNING;
-        swtch(&(c->scheduler), p->context);
-        switchkvm();
-        cprintf(" %d  one cycle\n",p->priority);
-        j++;
-        c->proc = 0;
-      }
+        if(p->priority ==0)
+            j=1;
+        else if(p->priority==1)
+            j=2;
+        else if(p->priority==2)
+            j=4;
+        for(r=0;r<j;r++){
+            p->lastschedule=total_tick;
+            total_tick++;
+            p->tick++;
+            switchuvm(p);
+            p->state = RUNNING;
+            swtch(&(c->scheduler), p->context);
+            switchkvm();
+            cprintf(" %d  one cycle\n",p->priority);
+            check=1;
+            /*if(p->priority ==0){
+                cprintf("priority\n");
+                if(p->tick==5){
+                    cprintf("tick\n");
+                    p->priority++;
+                    p->tick=0;
+                }   
+            }
+            if(p->priority==1){
+                if(p->tick==10){
+                    p->priority++;
+                    p->tick=0;
+                }
+            }*/
+        }
+        c->proc=0; 
+     }
     }
     release(&ptable.lock);
   }
@@ -469,7 +498,7 @@ procdump(void)
 }
 int getlev(void)
 {
-    return 0;
+    return myproc()->priority;
 }
 int set_cpu_share(int percent)
 {
