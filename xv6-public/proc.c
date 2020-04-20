@@ -322,6 +322,7 @@ scheduler(void)
         {
           min_pass=p->pass;
           stride=p;
+          cprintf("i found min_pass %d\n",min_pass);
         } // find q to schedule
     }
     if(min_pass >= mlfq_pass) // do mlfq schedule
