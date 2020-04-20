@@ -336,6 +336,7 @@ scheduler(void)
         for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
         {
           if(p->state != RUNNABLE) continue; // check p's state
+          if(p->isstride==1) continue;
           if(p->priority==check_priority) break; // find q to schedule
         }
         if(p->priority==check_priority) break; // find q to schedule
@@ -373,6 +374,7 @@ scheduler(void)
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
+        stride=0;
         //cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
     //cprintf("release in mlfq shceduler\n");
