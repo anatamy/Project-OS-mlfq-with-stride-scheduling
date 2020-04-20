@@ -299,14 +299,14 @@ scheduler(void)
   int repaet_array[3]={1,2,4};
   int check_priority=0;
   int i=0;
-  int min_pass=100000;
+  int min_pass=1000000000;
   mlfq_stride=max_tickets/mlfq_cpu;
   for(;;)
   {
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
-    cprintf("acquire in mlfq shceduler\n");
+   // cprintf("acquire in mlfq shceduler\n");
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
@@ -364,7 +364,7 @@ scheduler(void)
         switchkvm();
         cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
-    cprintf("release in mlfq shceduler\n");
+    //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
     }
 }
