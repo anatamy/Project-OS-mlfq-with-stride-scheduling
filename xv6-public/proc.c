@@ -215,9 +215,9 @@ exit(void)
   end_op();
   curproc->cwd = 0;
   acquire(&ptable.lock);
-  mlfq_ticket=curproc->tickets;
+  mlfq_ticket=curproc->ticket;
   mlfq_stride=max_tickets/mlfq_stride;
-  stride_ticket=stride_ticket-curproc->tickets;
+  stride_ticket=stride_ticket-curproc->ticket
   // Parent might be sleeping in wait().
   wakeup1(curproc->parent);
   // Pass abandoned children to init.
@@ -316,7 +316,7 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
-      cprintf("my pass : %d, my stride : %d, my isstride : %d mlfq_pass : %d\n",p->pass, p->stride, p->isstride, mlfq_pass);
+      if(stride_ticket !=0) cprintf("my pass : %d, my stride : %d, my isstride : %d mlfq_pass : %d\n",p->pass, p->stride, p->isstride, mlfq_pass);
       if(p->state != RUNNABLE) continue; // check p's state
       if(p->isstride != 1) continue;
       if(min_pass > p->pass)
