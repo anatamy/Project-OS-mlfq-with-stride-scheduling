@@ -569,7 +569,7 @@ int set_cpu_share(int ticket)
     stride_ticket+=ticket;
     myproc()->pass=min_pass;
     myproc()->tickets=ticket;
-    myproc()->stride=max_tickets/p->tickets;
+    myproc()->stride=max_tickets/myproc()->tickets;
     mlfq_ticket=mlfq_ticket-ticket;
     mlfq_stride=max_tickets/mlfq_ticket;
     myproc()->isstride=1;
