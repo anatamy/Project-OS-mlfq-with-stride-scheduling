@@ -273,7 +273,7 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
-voit
+void
 priority_boost()
 {
   struct proc *p;
@@ -303,7 +303,7 @@ scheduler(void)
     {
       priority_boost();
     }
-    for(check_priority=0;check_priority<=2;check_priority++;)
+    for(check_priority=0;check_priority<=2;check_priority++)
     {
       for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
       {
@@ -311,8 +311,8 @@ scheduler(void)
         if(p->priority==check_priority) break; // find q to schedule
       }
       if(p->priority==check_priority) break; // find q to schedule
-     }  
-     c->proc = p;  
+     }
+     c->proc = p;
      for(i=0;i<repaet_array[p->priority];i++)
      {
           total_tick++;
@@ -321,18 +321,18 @@ scheduler(void)
           p->state = RUNNING;
           swtch(&(c->scheduler), p->context);
           switchkvm();
-          cprintf(" %d  one cycle\n",total_tick);
+          cprintf(" total tick : %d check_priority: %d I : %d \n",total_tick,check_priority, i);
      }
       if(p->priority <2)
       {
         if(p->tick % 5 ==0)
         {
-          p->tick==0;
+          p->tick=0;
           p->priority++;
         }
       }
-      c->proc=0; 
-      release(&ptable.lock); 
+      c->proc=0;
+      release(&ptable.lock);
     }
 }
 // Enter scheduler.  Must hold only ptable.lock
