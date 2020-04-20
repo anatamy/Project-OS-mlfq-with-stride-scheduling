@@ -571,7 +571,7 @@ int set_cpu_share(int ticket)
     mlfq_ticket=mlfq_ticket-ticket;
     mlfq_stride=max_tickets/mlfq_ticket;
     p->isstride=1;
-    cprintf("my pass : %d, my tickets : %d, my stride : %d\n",p->pass,p->tickets,p->stride);
+    cprintf("stride ticket : %d, my pass : %d, my tickets : %d, my stride : %d\n",stride_ticket,p->pass,p->tickets,p->stride);
     release(&ptable.lock);
     return 0;
 }
