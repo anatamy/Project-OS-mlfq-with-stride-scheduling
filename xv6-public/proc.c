@@ -316,6 +316,7 @@ scheduler(void)
     acquire(&ptable.lock);
     for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
     {
+      cprintf("my pass : %d, my stride : %d, my isstride : %d mlfq_pass : %d\n",p->pass, p->stride, p->isstride, mlfq_pass);
       if(p->state != RUNNABLE) continue; // check p's state
       if(p->isstride != 1) continue;
       if(min_pass > p->pass)
