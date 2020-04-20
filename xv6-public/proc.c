@@ -18,8 +18,8 @@ int total_tick=0;
 int stride_cpu=0;
 int mlfq_cpu=100;
 int max_tickets=100;
-int mlfq_pas=0;
-int mlfq_stride=max_tickets/mlfq_cpu;
+int mlfq_pass=0;
+int mlfq_stride=0;
 extern void forkret(void);
 extern void trapret(void);
 static void wakeup1(void *chan);
@@ -299,6 +299,7 @@ scheduler(void)
   int check_priority=0;
   int i=0;
   int min_pass=100000;
+  mlfq_stride=max_tickets/mlfq_cpu;
   for(;;){
     // Enable interrupts on this processor.
     sti();
@@ -543,12 +544,12 @@ int set_cpu_share(int cpu)
     if(stride_cpu+cpu>80)
     {
       release(&ptable.lock);
-      return =-1
+      return -1;
     }
     p->pass=min_pass;
     p->tickets=cpu;
     p->stride=max_tickets/p->tickets;
-    mlfq_cpu=mlfq_ticket-cpu;
+    mlfq_cpu=mlfq_cpu-cpu;
     mlfq_stride=max_tickets/mlfq_cpu;
     p->isstride=1;
     release(&ptable.lock);
