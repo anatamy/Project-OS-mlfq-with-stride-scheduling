@@ -273,69 +273,67 @@ wait(void)
 //  - swtch to start running that process
 //  - eventually that process transfers control
 //      via swtch back to the scheduler.
+voit
+priority_boost()
+{
+  struct proc *p;
+  for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+  {
+    p->tick=0;
+    p->priority=0;
+  }
+  total_tick=0;
+}
 void
 scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
   c->proc = 0;
+  int repaet_array[3]={1,2,4};
+  int check_priority=0;
   int i=0;
-  int j=0;
-  int r=0;
-  int check=0;
   for(;;){
-    check=0;
     // Enable interrupts on this processor.
     sti();
     // Loop over process table looking for process to run.
     acquire(&ptable.lock);
-    for(i=0;i<=2;i++){
-      if(check==1){
-        check=0;
-        break;
-      }
-      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-        if(p->state != RUNNABLE)
-          continue;
-        if(p->priority!=i)
-          continue;
-        c->proc = p;
-        if(p->priority ==0)
-            j=1;
-        else if(p->priority==1)
-            j=2;
-        else if(p->priority==2)
-            j=4;
-        for(r=0;r<j;r++){
-            p->lastschedule=total_tick;
-            total_tick++;
-            p->tick++;
-            switchuvm(p);
-            p->state = RUNNING;
-            swtch(&(c->scheduler), p->context);
-            switchkvm();
-            cprintf(" %d  one cycle\n",p->priority);
-            check=1;
-            /*if(p->priority ==0){
-                cprintf("priority\n");
-                if(p->tick==5){
-                    cprintf("tick\n");
-                    p->priority++;
-                    p->tick=0;
-                }   
-            }
-            if(p->priority==1){
-                if(p->tick==10){
-                    p->priority++;
-                    p->tick=0;
-                }
-            }*/
-        }
-        c->proc=0; 
-     }
+    //priority_boost;
+    if(total_tick>=100)
+    {
+      priority_boost();
     }
-    release(&ptable.lock);
-  }
+    for(check_priority=0;check_priority<=2;check_priority++;)
+    {
+      for(p = ptable.proc; p < &ptable.proc[NPROC]; p++)
+      {
+        if(p->state != RUNNABLE) continue; // check p's state
+        if(p->priority==check_priority) break; // find q to schedule
+      }
+      if(p->priority==check_priority) break; // find q to schedule
+     }  
+     c->proc = p;  
+     for(i=0;i<repaet_array[p->priority];i++)
+     {
+          total_tick++;
+          p->tick++;
+          switchuvm(p);
+          p->state = RUNNING;
+          swtch(&(c->scheduler), p->context);
+          switchkvm();
+          cprintf(" %d  one cycle\n",total_tick);
+     }
+      if(p->priority <2)
+      {
+        if(p->tick % 5 ==0)
+        {
+          p->tick==0;
+          p->priority++;
+        }
+      }
+      c->proc=0; 
+      release(&ptable.lock); 
+    }
 }
 // Enter scheduler.  Must hold only ptable.lock
 // and have changed proc->state. Saves and restores
@@ -508,4 +506,3 @@ int getppid(void)
 {
     return 0;
 }
-
