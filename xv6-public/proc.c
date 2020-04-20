@@ -323,7 +323,7 @@ scheduler(void)
         {
           min_pass=p->pass;
           stride=p;
-          cprintf("i found min_pass %d mlfq pass : %d\n",min_pass,mlfq_pass);
+          //cprintf("i found min_pass %d mlfq pass : %d\n",min_pass,mlfq_pass);
         } // find q to schedule
     }
     if(min_pass >= mlfq_pass) // do mlfq schedule
@@ -379,7 +379,7 @@ scheduler(void)
         switchkvm();
         stride=0;
         c->proc=0;
-        cprintf(" my_pass : %d , my_stride : %d, my_ticket : \n", p->pass,p->stride,p->tickets);
+        //cprintf(" my_pass : %d , my_stride : %d, my_ticket : \n", p->pass,p->stride,p->tickets);
     }
     //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
