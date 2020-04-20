@@ -341,7 +341,7 @@ scheduler(void)
           p->state = RUNNING;
           swtch(&(c->scheduler), p->context);
           switchkvm();
-          cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
+      //    cprintf(" total tick : %d check_priority: %d mlfq_pass : %d \n",total_tick,check_priority, mlfq_pass);
        }
         if(p->priority <2)
         {
@@ -362,7 +362,7 @@ scheduler(void)
         p->state = RUNNING;
         swtch(&(c->scheduler), p->context);
         switchkvm();
-        cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
+     //   cprintf(" mlfq_pass : %d , p-> pass : %d, p-> stride : \n",mlfq_pass, p->pass,p->stride);
     }
     //cprintf("release in mlfq shceduler\n");
     release(&ptable.lock);
