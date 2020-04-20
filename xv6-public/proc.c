@@ -315,13 +315,14 @@ scheduler(void)
      c->proc = p;
      for(i=0;i<repaet_array[p->priority];i++)
      {
-          total_tick++;
-          p->tick++;
-          switchuvm(p);
-          p->state = RUNNING;
-          swtch(&(c->scheduler), p->context);
-          switchkvm();
-          cprintf(" total tick : %d check_priority: %d I : %d \n",total_tick,check_priority, i);
+        if(p->state != RUNNABLE) break;  
+        total_tick++;
+        p->tick++;
+        switchuvm(p);
+        p->state = RUNNING;
+        swtch(&(c->scheduler), p->context);
+        switchkvm();
+        cprintf(" total tick : %d check_priority: %d I : %d \n",total_tick,check_priority, i);
      }
       if(p->priority <2)
       {
