@@ -16,8 +16,11 @@
 
 char *child_argv[CNT_CHILD][3] = {
   // Process scheduled by Stride scheduler, use 10% of CPU resources
+ // {NAME_CHILD_STRIDE, "5" , 0},
   {NAME_CHILD_STRIDE, "10", 0},
   // Process scheduled by Stride scheduler, use 40% of CPU resources
+ // {NAME_CHILD_STRIDE, "15", 0},
+ // {NAME_CHILD_STRIDE, "20", 0},
   {NAME_CHILD_STRIDE, "40", 0},
   // Process scheduled by MLFQ scheduler, does not yield() itself
   {NAME_CHILD_MLFQ, "0", 0},
